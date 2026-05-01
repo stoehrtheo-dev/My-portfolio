@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theo Stöhr – Nachbarschaftshilfe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green: #2d6a4f;
+      --green-light: #52b788;
+      --green-pale: #d8f3dc;
+      --yellow: #f6bd60;
+      --yellow-dark: #e09f3e;
+      --cream: #faf9f6;
+      --dark: #1a1a2e;
+      --gray: #6b7280;
+      --white: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── COOKIE BANNER ── */
+    #cookie-banner {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+      background: var(--dark); color: var(--white);
+      padding: 1.2rem 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5rem; flex-wrap: wrap;
+      border-top: 2px solid var(--green-light);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+    }
+    #cookie-banner.visible { transform: translateY(0); }
+    .cookie-text { font-size: 0.88rem; color: rgba(255,255,255,0.8); flex: 1; min-width: 220px; line-height: 1.5; }
+    .cookie-text a { color: var(--green-light); text-decoration: underline; cursor: pointer; }
+    .cookie-actions { display: flex; gap: 0.8rem; flex-shrink: 0; }
+    .cookie-btn {
+      padding: 0.55rem 1.4rem; border-radius: 99px; font-size: 0.88rem;
+      font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .cookie-accept { background: var(--green); color: var(--white); }
+    .cookie-accept:hover { background: var(--green-light); }
+    .cookie-decline { background: rgba(255,255,255,0.1); color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
+    .cookie-decline:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 5%;
+      background: rgba(250,249,246,0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem;
+      color: var(--green); letter-spacing: -0.5px; text-decoration: none;
+    }
+    .nav-logo span { color: var(--yellow-dark); }
+    nav ul { list-style: none; display: flex; gap: 2rem; }
+    nav ul a { font-size: 0.9rem; font-weight: 500; color: var(--dark); text-decoration: none; transition: color 0.2s; }
+    nav ul a:hover { color: var(--green); }
+    .nav-cta {
+      background: var(--green) !important; color: var(--white) !important;
+      padding: 0.5rem 1.3rem; border-radius: 99px;
+      font-weight: 600 !important; transition: background 0.2s, transform 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--green-light) !important; transform: scale(1.04) !important; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; padding: 7rem 5% 4rem; gap: 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg-blob {
+      position: absolute; top: -120px; right: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--green-pale) 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+      animation: floatBlob 6s ease-in-out infinite;
+    }
+    .hero-bg-blob2 {
+      position: absolute; bottom: -80px; left: -60px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #fff3d4 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+      animation: floatBlob 8s ease-in-out infinite reverse;
+    }
+    @keyframes floatBlob {
+      0%,100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+
+    .hero-text { position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--green-pale); color: var(--green);
+      padding: 0.4rem 1rem; border-radius: 99px;
+      font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge::before { content: '✦'; font-size: 0.8rem; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 800; line-height: 1.05; letter-spacing: -2px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    h1 em { font-style: normal; color: var(--green); position: relative; }
+    h1 em::after {
+      content: ''; position: absolute; left: 0; bottom: 4px;
+      width: 100%; height: 6px; background: var(--yellow);
+      border-radius: 3px; z-index: -1;
+    }
+
+    .hero-sub {
+      margin-top: 1.4rem; font-size: 1.1rem; line-height: 1.7;
+      color: var(--gray); max-width: 440px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; margin-top: 2.2rem; flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+    .btn-primary {
+      background: var(--green); color: var(--white);
+      padding: 0.85rem 2rem; border-radius: 99px;
+      font-size: 1rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.25s; display: inline-flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(45,106,79,0.35); font-family: inherit;
+    }
+    .btn-primary:hover { background: var(--green-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(45,106,79,0.4); }
+    .btn-secondary {
+      background: transparent; color: var(--dark);
+      padding: 0.85rem 2rem; border-radius: 99px;
+      font-size: 1rem; font-weight: 600;
+      text-decoration: none; border: 2px solid rgba(0,0,0,0.15); cursor: pointer;
+      transition: all 0.25s; display: inline-flex; align-items: center; font-family: inherit;
+    }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+    .hero-stats {
+      display: flex; gap: 2rem; margin-top: 3rem;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; }
+    .stat-label { font-size: 0.8rem; color: var(--gray); margin-top: 0.2rem; }
+
+    .hero-visual {
+      position: relative; z-index: 2;
+      display: flex; justify-content: center; align-items: center;
+      animation: fadeIn 0.8s 0.2s ease both;
+    }
+    .hero-card {
+      background: var(--white); border-radius: 28px; padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.05);
+      width: 340px; position: relative;
+    }
+    .hero-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--green-light), var(--green));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; margin-bottom: 1rem;
+    }
+    .hero-card h3 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; }
+    .hero-card p { color: var(--gray); font-size: 0.9rem; margin-top: 0.3rem; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.2rem; }
+    .tag { background: var(--green-pale); color: var(--green); padding: 0.3rem 0.9rem; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+    .review-mini { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #f0f0f0; display: flex; align-items: center; gap: 0.8rem; }
+    .stars-display { color: var(--yellow-dark); font-size: 0.9rem; letter-spacing: 2px; }
+    .review-text { font-size: 0.82rem; color: var(--gray); }
+
+    /* ── SERVICES ACCORDION ── */
+    #leistungen { padding: 6rem 5%; background: var(--white); }
+    .section-label { font-size: 0.8rem; font-weight: 700; letter-spacing: 3px; color: var(--green); text-transform: uppercase; margin-bottom: 0.8rem; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; letter-spacing: -1.5px; max-width: 500px; line-height: 1.1; }
+    .section-header { margin-bottom: 3.5rem; }
+
+    .services-list { display: flex; flex-direction: column; gap: 0.75rem; max-width: 820px; margin: 0 auto; }
+
+    .acc-item {
+      background: var(--cream); border: 1.5px solid rgba(0,0,0,0.07);
+      border-radius: 18px; overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .acc-item:hover { border-color: rgba(82,183,136,0.5); }
+    .acc-item.open { border-color: var(--green-light); box-shadow: 0 8px 32px rgba(45,106,79,0.1); }
+
+    .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 1.3rem 1.6rem; cursor: pointer; user-select: none; }
+    .acc-left { display: flex; align-items: center; gap: 1rem; }
+    .acc-icon { font-size: 1.8rem; line-height: 1; }
+    .acc-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .acc-arrow {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--green-pale); color: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 700; line-height: 1;
+      transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1), background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .acc-item.open .acc-arrow { transform: rotate(45deg); background: var(--green); color: var(--white); }
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height 0.42s cubic-bezier(0.4,0,0.2,1); }
+    .acc-item.open .acc-body { max-height: 200px; }
+    .acc-content { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.2rem; padding: 1.2rem 1.6rem 1.5rem; border-top: 1px solid rgba(0,0,0,0.06); }
+    .acc-desc { font-size: 0.93rem; color: var(--gray); line-height: 1.7; flex: 1; }
+    .acc-price { background: var(--green); color: var(--white); padding: 0.4rem 1.1rem; border-radius: 99px; font-size: 0.82rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+
+    /* ── ABOUT ── */
+    #ueber-mich { padding: 6rem 5%; }
+    .about-inner { max-width: 680px; }
+    .about-inner h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; letter-spacing: -1px; line-height: 1.15; }
+    .about-inner p { color: var(--gray); line-height: 1.8; margin-top: 1.2rem; font-size: 0.98rem; }
+    .trait-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .trait { display: flex; align-items: center; gap: 0.8rem; font-size: 0.95rem; font-weight: 500; }
+    .trait-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+    /* ── REVIEWS ── */
+    #bewertungen { padding: 6rem 5%; background: var(--white); }
+
+    .reviews-summary {
+      display: flex; align-items: center; gap: 2.5rem;
+      background: var(--cream); border-radius: 20px;
+      padding: 2rem 2.5rem; margin-bottom: 3rem;
+      border: 1px solid rgba(0,0,0,0.06); max-width: 540px;
+    }
+    .avg-score { text-align: center; }
+    .avg-num { font-family: 'Syne', sans-serif; font-size: 3.5rem; font-weight: 800; color: var(--dark); line-height: 1; }
+    .avg-stars { color: var(--yellow-dark); font-size: 1.3rem; letter-spacing: 3px; margin-top: 0.3rem; }
+    .avg-count { font-size: 0.82rem; color: var(--gray); margin-top: 0.4rem; }
+    .rating-bars { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+    .bar-row { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: var(--gray); }
+    .bar-row span:first-child { width: 14px; text-align: right; }
+    .bar-track { flex: 1; height: 6px; background: #e8e8e8; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--yellow-dark); border-radius: 99px; transition: width 0.6s ease; }
+    .bar-count { width: 18px; font-size: 0.75rem; }
+
+    /* Review cards */
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; margin-bottom: 3rem; }
+    .review-card {
+      background: var(--cream); border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 18px; padding: 1.5rem;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .review-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-3px); }
+    .rc-stars { color: var(--yellow-dark); font-size: 1rem; letter-spacing: 2px; }
+    .rc-msg { font-size: 0.9rem; color: var(--gray); line-height: 1.6; margin-top: 0.7rem; }
+    .rc-name { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; margin-top: 1rem; color: var(--dark); }
+    .rc-date { font-size: 0.75rem; color: #aaa; margin-top: 0.2rem; }
+    .no-reviews { color: var(--gray); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+    /* Review form */
+    .review-form-wrap {
+      background: var(--cream); border: 1.5px solid rgba(0,0,0,0.07);
+      border-radius: 24px; padding: 2.5rem;
+      max-width: 600px;
+    }
+    .review-form-wrap h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; }
+
+    /* Star picker */
+    .star-picker { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 0.3rem; margin-bottom: 1.5rem; }
+    .star-picker input { display: none; }
+    .star-picker label {
+      font-size: 2rem; cursor: pointer; color: #d1d5db;
+      transition: color 0.15s, transform 0.15s;
+      line-height: 1;
+    }
+    .star-picker label:hover,
+    .star-picker label:hover ~ label,
+    .star-picker input:checked ~ label { color: var(--yellow-dark); }
+    .star-picker label:hover { transform: scale(1.2); }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--dark); }
+    .form-group input,
+    .form-group textarea {
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1.5px solid rgba(0,0,0,0.1); border-radius: 12px;
+      font-family: inherit; font-size: 0.93rem; color: var(--dark);
+      background: var(--white); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(45,106,79,0.1); }
+    .form-group textarea { min-height: 110px; }
+    .form-hint { font-size: 0.78rem; color: #aaa; margin-top: 0.3rem; }
+    .form-error { font-size: 0.82rem; color: #e05252; margin-top: 0.5rem; display: none; }
+
+    .submit-btn {
+      width: 100%; background: var(--green); color: var(--white);
+      padding: 0.9rem 2rem; border-radius: 99px;
+      font-size: 1rem; font-weight: 600; border: none; cursor: pointer;
+      font-family: inherit; transition: all 0.25s; margin-top: 0.5rem;
+      box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+    }
+    .submit-btn:hover { background: var(--green-light); transform: translateY(-2px); }
+    .submit-success {
+      display: none; background: var(--green-pale); color: var(--green);
+      border-radius: 12px; padding: 1rem 1.2rem;
+      font-weight: 600; font-size: 0.93rem; margin-top: 1rem; text-align: center;
+    }
+
+    /* ── CONTACT ── */
+    #kontakt {
+      padding: 6rem 5%;
+      background: var(--dark); color: var(--white);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    #kontakt::before {
+      content: ''; position: absolute; top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(82,183,136,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    #kontakt .section-label { color: var(--green-light); }
+    #kontakt .section-title { color: var(--white); margin: 0 auto 1rem; text-align: center; }
+    .contact-sub { color: rgba(255,255,255,0.6); font-size: 1rem; margin-bottom: 3rem; }
+
+    .contact-grid { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; max-width: 720px; margin: 0 auto 3rem; }
+    .contact-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 1.8rem 2.2rem;
+      flex: 1; min-width: 190px;
+      transition: all 0.3s; text-decoration: none; color: inherit; display: block;
+    }
+    .contact-card:hover { background: rgba(255,255,255,0.11); border-color: var(--green-light); transform: translateY(-4px); }
+    .contact-card.no-link { cursor: default; }
+    .contact-card.no-link:hover { transform: none; }
+    .contact-card .icon { font-size: 2rem; margin-bottom: 0.8rem; }
+    .contact-card h4 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+    .contact-card p { color: rgba(255,255,255,0.55); font-size: 0.82rem; margin-top: 0.3rem; }
+    .contact-card .val { color: var(--green-light); font-weight: 600; display: block; margin-top: 0.5rem; font-size: 0.88rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 2.5rem 5%;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-copy { color: rgba(255,255,255,0.3); font-size: 0.82rem; }
+    .footer-copy span { color: var(--green-light); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: rgba(255,255,255,0.4); font-size: 0.82rem; text-decoration: none; transition: color 0.2s; cursor: pointer; }
+    .footer-links a:hover { color: var(--green-light); }
+
+    /* ── IMPRESSUM MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9998;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--white); border-radius: 24px;
+      padding: 2.5rem; max-width: 600px; width: 100%;
+      max-height: 80vh; overflow-y: auto;
+      transform: translateY(20px) scale(0.98);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+      position: relative;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
+    .modal h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    .modal p, .modal li { font-size: 0.9rem; color: var(--gray); line-height: 1.7; }
+    .modal ul { padding-left: 1.2rem; }
+    .modal-close {
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--cream); border: none; cursor: pointer;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: #e8e8e8; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.65s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav ul { display: none; }
+      #hero { grid-template-columns: 1fr; padding-top: 6rem; }
+      .hero-visual { display: none; }
+      .acc-content { flex-direction: column; }
+      .reviews-summary { flex-direction: column; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── COOKIE BANNER ── -->
+<div id="cookie-banner">
+  <p class="cookie-text">
+    Diese Website verwendet ausschließlich technisch notwendige Cookies, die für den Betrieb der Seite erforderlich sind (z.B. zum Speichern deiner Bewertung). Es werden keine Tracking- oder Marketing-Cookies verwendet.
+    <a onclick="openModal('datenschutz')">Mehr erfahren</a>
+  </p>
+  <div class="cookie-actions">
+    <button class="cookie-btn cookie-decline" onclick="closeCookie()">Ablehnen</button>
+    <button class="cookie-btn cookie-accept" onclick="acceptCookie()">Alles klar ✓</button>
+  </div>
+</div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="#hero" class="nav-logo">Theo<span>.</span></a>
+  <ul>
+    <li><a href="#leistungen">Leistungen</a></li>
+    <li><a href="#ueber-mich">Über mich</a></li>
+    <li><a href="#bewertungen">Bewertungen</a></li>
+    <li><a href="#kontakt" class="nav-cta">Kontakt</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg-blob"></div>
+  <div class="hero-bg-blob2"></div>
+
+  <div class="hero-text">
+    <div class="hero-badge">Deine Nachbarschaftshilfe in Kirberg & Hünfelden</div>
+    <h1>Hilfe, auf<br>die du dich <em>verlassen</em> kannst.</h1>
+    <p class="hero-sub">Hey, ich bin Theo – 14 Jahre alt und bereit, im Alltag anzupacken. Ob Hund ausführen, Rasen mähen oder sonstige Alltagsaufgaben – ich bin zuverlässig, pünktlich und mit Herzblut dabei.</p>
+    <div class="hero-actions">
+      <a href="https://www.instagram.com/der.theo534/" target="_blank" rel="noopener" class="btn-primary">📩 Auf Instagram schreiben</a>
+      <a href="#leistungen" class="btn-secondary">Alle Leistungen ↓</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Zuverlässigkeit</div></div>
+      <div class="stat"><div class="stat-num">6+</div><div class="stat-label">Angebote</div></div>
+      <div class="stat"><div class="stat-num">14</div><div class="stat-label">Jahre jung</div></div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-avatar">🧑</div>
+      <h3>Theo Stöhr</h3>
+      <p>Nachbarschaftshilfe · Kirberg, Hünfelden</p>
+      <div class="tag-list">
+        <span class="tag">🐕 Gassi gehen</span>
+        <span class="tag">🌿 Rasenmähen</span>
+        <span class="tag">🛒 Einkaufen</span>
+        <span class="tag">📦 Botengänge</span>
+      </div>
+      <div class="review-mini">
+        <div class="stars-display" id="hero-stars">★★★★★</div>
+        <div class="review-text" id="hero-review-count">Noch keine Bewertungen</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICES ── -->
+<section id="leistungen">
+  <div class="section-header reveal">
+    <div class="section-label">Was ich anbiete</div>
+    <h2 class="section-title">Alltagshilfe, die wirklich hilft.</h2>
+  </div>
+
+  <div class="services-list">
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">🐕</span><span class="acc-title">Gassi gehen</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Ich gehe mit deinem Hund Gassi – zuverlässig, pünktlich und mit echter Tierliebe. Bitte beachten: Ich nehme Hunde nur für Spaziergänge mit, kein ganztägiges Dogsitting.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">🌿</span><span class="acc-title">Rasenmähen</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Dein Garten soll gepflegt aussehen? Ich mähe deinen Rasen gründlich und zuverlässig – damit du dich entspannen kannst.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">🛒</span><span class="acc-title">Einkaufshilfe</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Liste raus und los – ich erledige deine Besorgungen schnell, sorgfältig und ohne Umwege.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">📦</span><span class="acc-title">Botengänge</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Pakete abholen, Briefe abgeben oder kleine Erledigungen in der Nachbarschaft – ich bin schnell und verlässlich unterwegs.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">🌱</span><span class="acc-title">Gartenpflege</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Blumen gießen, Unkraut jäten oder beim Aufräumen helfen – dein Garten ist bei mir in guten Händen.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+    <div class="acc-item reveal">
+      <div class="acc-header"><div class="acc-left"><span class="acc-icon">✨</span><span class="acc-title">Sonstige Hilfe</span></div><div class="acc-arrow">+</div></div>
+      <div class="acc-body"><div class="acc-content"><p class="acc-desc">Du brauchst etwas, das nicht auf der Liste steht? Schreib mir einfach! Ich bin offen für alle Aufgaben und helfe, wo ich kann.</p><span class="acc-price">Auf Anfrage</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section id="ueber-mich">
+  <div class="about-inner reveal">
+    <div class="section-label">Über mich</div>
+    <h2>Hi, ich bin<br>Theo Stöhr.</h2>
+    <p>Ich bin 14 Jahre alt und wohne in Kirberg, Hünfelden. Schon immer habe ich gern bei anderen angepackt und geholfen – deshalb biete ich jetzt offiziell Nachbarschaftshilfe an.</p>
+    <p>Bei mir bekommst du keine halbherzige Hilfe, sondern echtes Engagement. Ich bin pünktlich, ehrlich und gehe jede Aufgabe mit vollem Einsatz an. Deine Zufriedenheit liegt mir am Herzen.</p>
+    <div class="trait-list">
+      <div class="trait"><div class="trait-dot"></div>Zuverlässig & pünktlich</div>
+      <div class="trait"><div class="trait-dot"></div>Fleißig und motiviert</div>
+      <div class="trait"><div class="trait-dot"></div>Ehrlich und vertrauenswürdig</div>
+      <div class="trait"><div class="trait-dot"></div>Tierliebend – gerne Gassi mit deinem Hund 🐕</div>
+      <div class="trait"><div class="trait-dot"></div>Offen für neue Aufgaben</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REVIEWS ── -->
+<section id="bewertungen">
+  <div class="section-header reveal">
+    <div class="section-label">Was andere sagen</div>
+    <h2 class="section-title">Bewertungen.</h2>
+  </div>
+
+  <div class="reviews-summary reveal" id="reviews-summary" style="display:none;">
+    <div class="avg-score">
+      <div class="avg-num" id="avg-num">0.0</div>
+      <div class="avg-stars" id="avg-stars">☆☆☆☆☆</div>
+      <div class="avg-count" id="avg-count">0 Bewertungen</div>
+    </div>
+    <div class="rating-bars" id="rating-bars">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <div class="reviews-grid reveal" id="reviews-grid"></div>
+  <p class="no-reviews reveal" id="no-reviews-msg">Noch keine Bewertungen. Sei der Erste! 👇</p>
+
+  <div class="review-form-wrap reveal">
+    <h3>Bewertung hinterlassen</h3>
+
+    <div class="star-picker" id="star-picker">
+      <input type="radio" name="stars" id="s5" value="5"><label for="s5" title="5 Sterne">★</label>
+      <input type="radio" name="stars" id="s4" value="4"><label for="s4" title="4 Sterne">★</label>
+      <input type="radio" name="stars" id="s3" value="3"><label for="s3" title="3 Sterne">★</label>
+      <input type="radio" name="stars" id="s2" value="2"><label for="s2" title="2 Sterne">★</label>
+      <input type="radio" name="stars" id="s1" value="1"><label for="s1" title="1 Stern">★</label>
+    </div>
+    <p id="star-error" class="form-error" style="display:none; margin-bottom:0.8rem;">Bitte wähle eine Sternanzahl aus.</p>
+
+    <div class="form-group">
+      <label for="review-name">Name <span style="color:#aaa; font-weight:400">(optional)</span></label>
+      <input type="text" id="review-name" placeholder="z.B. Familie Müller" maxlength="50" />
+    </div>
+
+    <div class="form-group">
+      <label for="review-msg">Deine Nachricht <span style="color:#aaa; font-weight:400">(optional)</span></label>
+      <textarea id="review-msg" placeholder="Was hat dir besonders gut gefallen?" maxlength="400"></textarea>
+      <p class="form-hint">Maximal 400 Zeichen</p>
+    </div>
+
+    <button class="submit-btn" onclick="submitReview()">Bewertung abschicken ✓</button>
+    <div class="submit-success" id="submit-success">🎉 Danke für deine Bewertung! Sie wird sofort angezeigt.</div>
+  </div>
+</section>
+
+<!-- ── CONTACT ── -->
+<section id="kontakt">
+  <div class="section-label reveal">Kontakt</div>
+  <h2 class="section-title reveal">Lass uns loslegen!</h2>
+  <p class="contact-sub reveal">Schreib mir auf Instagram oder per E-Mail – ich melde mich schnell zurück.</p>
+
+  <div class="contact-grid reveal">
+    <a class="contact-card" href="https://www.instagram.com/der.theo534/" target="_blank" rel="noopener">
+      <div class="icon">📸</div>
+      <h4>Instagram</h4>
+      <p>Am schnellsten erreichst du mich hier</p>
+      <span class="val">@der.theo534</span>
+    </a>
+    <a class="contact-card" href="mailto:theo.stoehr@icloud.com">
+      <div class="icon">📧</div>
+      <h4>E-Mail</h4>
+      <p>Für ausführlichere Anfragen</p>
+      <span class="val">theo.stoehr@icloud.com</span>
+    </a>
+    <div class="contact-card no-link">
+      <div class="icon">📍</div>
+      <h4>Standort</h4>
+      <p>Ich helfe ausschließlich in</p>
+      <span class="val">Leidenbergstraße 24<br>Kirberg, Hünfelden</span>
+    </div>
+  </div>
+
+  <a href="https://www.instagram.com/der.theo534/" target="_blank" rel="noopener" class="btn-primary reveal" style="font-size:1.05rem;">
+    📩 Jetzt auf Instagram anfragen
+  </a>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p class="footer-copy">© 2025 <span>Theo Stöhr</span> · Nachbarschaftshilfe · Kirberg, Hünfelden</p>
+  <div class="footer-links">
+    <a onclick="openModal('impressum')">Impressum</a>
+    <a onclick="openModal('datenschutz')">Datenschutz</a>
+    <a onclick="openModal('cookie-info')">Cookie-Einstellungen</a>
+  </div>
+</footer>
+
+<!-- ── IMPRESSUM MODAL ── -->
+<div class="modal-overlay" id="modal-impressum">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('impressum')">✕</button>
+    <h2>Impressum</h2>
+    <h3>Angaben gemäß § 5 TMG</h3>
+    <p>Theo Stöhr (minderjährig, vertreten durch den/die gesetzlichen Vertreter)<br>
+    Leidenbergstraße 24<br>
+    Kirberg, Hünfelden<br>
+    Hessen, Deutschland</p>
+    <h3>Kontakt</h3>
+    <p>E-Mail: theo.stoehr@icloud.com<br>
+    Instagram: <a href="https://www.instagram.com/der.theo534/" target="_blank" style="color:var(--green)">@der.theo534</a></p>
+    <h3>Hinweis zur Person</h3>
+    <p>Diese Website wird von einer minderjährigen Privatperson betrieben. Es handelt sich um ein privates Angebot zur Nachbarschaftshilfe ohne gewerblichen Charakter und ohne Umsatzsteuerpflicht (Kleinbetragsregelung).</p>
+    <h3>Haftung für Inhalte</h3>
+    <p>Die Inhalte dieser Seite wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.</p>
+    <h3>Haftung für Links</h3>
+    <p>Diese Website enthält Links zu externen Seiten Dritter (z.B. Instagram). Auf deren Inhalte haben wir keinen Einfluss und übernehmen dafür keine Haftung.</p>
+  </div>
+</div>
+
+<!-- ── DATENSCHUTZ MODAL ── -->
+<div class="modal-overlay" id="modal-datenschutz">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('datenschutz')">✕</button>
+    <h2>Datenschutzerklärung</h2>
+    <h3>1. Verantwortlicher</h3>
+    <p>Theo Stöhr, Kirberg, Hünfelden · E-Mail: theo.stoehr@icloud.com</p>
+    <h3>2. Welche Daten werden gespeichert?</h3>
+    <p>Diese Website speichert <strong>ausschließlich lokal in deinem Browser</strong> (localStorage) die abgegebenen Bewertungen sowie deine Cookie-Einstellung. Es werden keine Daten an einen Server übermittelt oder an Dritte weitergegeben.</p>
+    <h3>3. Cookies</h3>
+    <p>Es werden nur technisch notwendige Speichermechanismen (localStorage) verwendet, die für den Betrieb der Bewertungsfunktion und der Cookie-Einstellung erforderlich sind. Es werden keine Tracking- oder Werbe-Cookies eingesetzt.</p>
+    <h3>4. Externe Dienste</h3>
+    <p>Diese Website lädt Schriftarten von Google Fonts (fonts.googleapis.com). Dabei wird deine IP-Adresse an Google übermittelt. Weitere Informationen findest du in der <a href="https://policies.google.com/privacy" target="_blank" style="color:var(--green)">Datenschutzerklärung von Google</a>.</p>
+    <h3>5. Deine Rechte</h3>
+    <p>Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner gespeicherten Daten. Da alle Daten nur lokal in deinem Browser gespeichert werden, kannst du sie jederzeit selbst über die Browser-Einstellungen löschen.</p>
+    <h3>6. Minderjährigenschutz</h3>
+    <p>Diese Website ist nicht auf Kinder unter 13 Jahren ausgerichtet. Es werden keine personenbezogenen Daten von Minderjährigen erhoben.</p>
+  </div>
+</div>
+
+<!-- ── COOKIE INFO MODAL ── -->
+<div class="modal-overlay" id="modal-cookie-info">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('cookie-info')">✕</button>
+    <h2>Cookie-Einstellungen</h2>
+    <h3>Technisch notwendig (immer aktiv)</h3>
+    <p>Diese Website verwendet ausschließlich technisch notwendige Speicherung (localStorage), um:</p>
+    <ul style="margin-top:0.5rem; margin-left:1.2rem;">
+      <li>Deine Cookie-Einstellung zu speichern</li>
+      <li>Abgegebene Bewertungen lokal anzuzeigen</li>
+    </ul>
+    <p style="margin-top:1rem;">Es werden keine Analyse-, Marketing- oder Tracking-Cookies verwendet. Du kannst alle lokal gespeicherten Daten jederzeit über deine Browser-Einstellungen löschen.</p>
+    <div style="margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap;">
+      <button class="submit-btn" style="width:auto; padding: 0.7rem 1.5rem;" onclick="acceptCookie(); closeModal('cookie-info')">Akzeptieren ✓</button>
+      <button class="btn-secondary" style="padding: 0.7rem 1.5rem;" onclick="closeCookie(); closeModal('cookie-info')">Ablehnen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // COOKIE BANNER
+  // ─────────────────────────────────────────────
+  const banner = document.getElementById('cookie-banner');
+  if (!localStorage.getItem('cookie-consent')) {
+    setTimeout(() => banner.classList.add('visible'), 800);
+  }
+  function acceptCookie() {
+    localStorage.setItem('cookie-consent', 'accepted');
+    banner.classList.remove('visible');
+  }
+  function closeCookie() {
+    localStorage.setItem('cookie-consent', 'declined');
+    banner.classList.remove('visible');
+  }
+
+  // ─────────────────────────────────────────────
+  // MODALS
+  // ─────────────────────────────────────────────
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  // ACCORDION
+  // ─────────────────────────────────────────────
+  document.querySelectorAll('.acc-item').forEach(item => {
+    const header = item.querySelector('.acc-header');
+    item.addEventListener('mouseenter', () => { if (!item.dataset.clicked) item.classList.add('open'); });
+    item.addEventListener('mouseleave', () => { if (!item.dataset.clicked) item.classList.remove('open'); });
+    header.addEventListener('click', () => {
+      const wasClicked = item.dataset.clicked;
+      document.querySelectorAll('.acc-item').forEach(i => { delete i.dataset.clicked; i.classList.remove('open'); });
+      if (!wasClicked) { item.dataset.clicked = 'true'; item.classList.add('open'); }
+    });
+  });
+
+  // ─────────────────────────────────────────────
+  // REVIEWS
+  // ─────────────────────────────────────────────
+  function getReviews() {
+    try { return JSON.parse(localStorage.getItem('theo-reviews') || '[]'); } catch { return []; }
+  }
+  function saveReviews(reviews) {
+    localStorage.setItem('theo-reviews', JSON.stringify(reviews));
+  }
+
+  function starsHTML(n, filled = true) {
+    return Array.from({length: 5}, (_, i) =>
+      filled ? (i < n ? '★' : '☆') : (i < n ? '★' : '☆')
+    ).join('');
+  }
+
+  function renderReviews() {
+    const reviews = getReviews();
+    const grid = document.getElementById('reviews-grid');
+    const noMsg = document.getElementById('no-reviews-msg');
+    const summary = document.getElementById('reviews-summary');
+
+    grid.innerHTML = '';
+
+    if (reviews.length === 0) {
+      noMsg.style.display = 'block';
+      summary.style.display = 'none';
+      updateHeroStars(0, 0);
+      return;
+    }
+
+    noMsg.style.display = 'none';
+    summary.style.display = 'flex';
+
+    // Summary
+    const avg = reviews.reduce((a, r) => a + r.stars, 0) / reviews.length;
+    document.getElementById('avg-num').textContent = avg.toFixed(1);
+    document.getElementById('avg-stars').textContent = starsToDisplay(avg);
+    document.getElementById('avg-count').textContent = reviews.length + (reviews.length === 1 ? ' Bewertung' : ' Bewertungen');
+    updateHeroStars(avg, reviews.length);
+
+    // Bar chart
+    const counts = [0,0,0,0,0];
+    reviews.forEach(r => counts[r.stars - 1]++);
+    const barsEl = document.getElementById('rating-bars');
+    barsEl.innerHTML = [5,4,3,2,1].map(n => {
+      const pct = reviews.length ? Math.round(counts[n-1] / reviews.length * 100) : 0;
+      return `<div class="bar-row">
+        <span>${n}</span>
+        <span style="color:var(--yellow-dark)">★</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <span class="bar-count">${counts[n-1]}</span>
+      </div>`;
+    }).join('');
+
+    // Cards (newest first)
+    [...reviews].reverse().forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.innerHTML = `
+        <div class="rc-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+        ${r.msg ? `<p class="rc-msg">${escapeHTML(r.msg)}</p>` : ''}
+        <p class="rc-name">${r.name ? escapeHTML(r.name) : 'Anonym'}</p>
+        <p class="rc-date">${r.date}</p>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function starsToDisplay(avg) {
+    const full = Math.round(avg);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function updateHeroStars(avg, count) {
+    const el = document.getElementById('hero-stars');
+    const countEl = document.getElementById('hero-review-count');
+    if (count === 0) {
+      el.textContent = '☆☆☆☆☆';
+      countEl.textContent = 'Noch keine Bewertungen';
+    } else {
+      el.textContent = starsToDisplay(avg);
+      countEl.textContent = avg.toFixed(1) + ' / 5 · ' + count + (count === 1 ? ' Bewertung' : ' Bewertungen');
+    }
+  }
+
+  function escapeHTML(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function submitReview() {
+    const starInput = document.querySelector('input[name="stars"]:checked');
+    const starErr = document.getElementById('star-error');
+
+    if (!starInput) {
+      starErr.style.display = 'block';
+      return;
+    }
+    starErr.style.display = 'none';
+
+    const stars = parseInt(starInput.value);
+    const name = document.getElementById('review-name').value.trim().slice(0, 50);
+    const msg = document.getElementById('review-msg').value.trim().slice(0, 400);
+    const date = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    const reviews = getReviews();
+    reviews.push({ stars, name, msg, date });
+    saveReviews(reviews);
+
+    // Reset form
+    document.querySelector('input[name="stars"]:checked').checked = false;
+    document.getElementById('review-name').value = '';
+    document.getElementById('review-msg').value = '';
+
+    const success = document.getElementById('submit-success');
+    success.style.display = 'block';
+    setTimeout(() => success.style.display = 'none', 4000);
+
+    renderReviews();
+
+    setTimeout(() => {
+      document.getElementById('reviews-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+
+  // ─────────────────────────────────────────────
+  // SCROLL REVEAL
+  // ─────────────────────────────────────────────
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 70);
+        revealObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // Init
+  renderReviews();
+</script>
+</body>
+</html>
